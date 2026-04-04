@@ -53,7 +53,7 @@ def caida_presion_weymouth(P1, Q, L_mi, D_in, gamma, T_R, Z):
     term = const * (Q**2) * (L_mi * gamma * T_R * Z) / (D_in**5.33)
     P2_cuad = P1**2 - term
     if P2_cuad <= 0:
-        return 0
+        return 1.0   # valor mínimo para evitar división por cero
     return np.sqrt(P2_cuad)
 
 def potencia_compresor(Q, P_suc, P_desc, T_suc_R, Z, R_gas, k, eta):
