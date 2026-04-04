@@ -1,4 +1,4 @@
-# app.py - Sin dependencia de scipy (búsqueda binaria manual)
+# app.py 
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -6,21 +6,32 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 # ------------------------------------------------------------
-# CONFIGURACIÓN DE LA PÁGINA Y ESTILOS
+# CONFIGURACIÓN DE LA PÁGINA Y ESTILOS (sidebar a la derecha)
 # ------------------------------------------------------------
 st.set_page_config(page_title="Gasoducto Trans-Andino", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
+    /* Mover la barra lateral a la derecha */
     section[data-testid="stSidebar"] {
+        order: 2;
         min-width: 380px !important;
         width: 380px !important;
         background-color: #14161c;
-        border-right: 1px solid #2c3e50;
+        border-left: 1px solid #2c3e50;
+        border-right: none;
     }
-    .stApp { background-color: #0a0c10; }
+    /* El contenido principal queda a la izquierda */
+    .main > div {
+        order: 1;
+    }
+    .stApp {
+        background-color: #0a0c10;
+    }
     .stMarkdown, .stText, .stNumberInput label, .stSelectbox label, 
-    .stSlider label, .stMetric label { color: #ffffff !important; }
+    .stSlider label, .stMetric label {
+        color: #ffffff !important;
+    }
     .main-title {
         font-family: 'Arial Black', sans-serif;
         font-size: 2.8rem;
@@ -30,7 +41,12 @@ st.markdown("""
         letter-spacing: 2px;
         margin-bottom: 0.2rem;
     }
-    .subtitle { text-align: center; color: #cccccc; font-size: 1rem; margin-top: 0; }
+    .subtitle {
+        text-align: center;
+        color: #cccccc;
+        font-size: 1rem;
+        margin-top: 0;
+    }
     .metric-card {
         background-color: #1e1e2a;
         padding: 1rem;
@@ -39,9 +55,20 @@ st.markdown("""
         text-align: center;
         border-top: 4px solid #00aaff;
     }
-    h1, h2, h3 { color: #00aaff !important; font-weight: 600; }
-    hr { border-color: #2c3e50; }
-    .help-text { font-size: 0.75rem; color: #88aacc !important; margin-top: -8px; margin-bottom: 12px; font-style: italic; }
+    h1, h2, h3 {
+        color: #00aaff !important;
+        font-weight: 600;
+    }
+    hr {
+        border-color: #2c3e50;
+    }
+    .help-text {
+        font-size: 0.75rem;
+        color: #88aacc !important;
+        margin-top: -8px;
+        margin-bottom: 12px;
+        font-style: italic;
+    }
     .recommendation-box {
         background-color: #1a222a;
         border-left: 4px solid #ffaa00;
@@ -125,9 +152,6 @@ def temp_descarga(T_suc_R, P_suc, P_desc, k):
     T2_R = T_suc_R * (P_desc / P_suc)**((k-1)/k)
     return (T2_R - 491.67) * 5/9
 
-# ------------------------------------------------------------
-# SIMULACIÓN CON BÚSQUEDA BINARIA MANUAL (sin scipy)
-# ------------------------------------------------------------
 def encontrar_pdesc_necesaria(Q, D_in, N_est):
     L_seg_mi = (L_TOTAL_KM * 0.621371) / N_est
     L_seg_km = L_TOTAL_KM / N_est
@@ -141,14 +165,12 @@ def encontrar_pdesc_necesaria(Q, D_in, N_est):
                 return -1.0
         return P_actual
     
-    # Búsqueda binaria manual
     P_min = P_RECEPCION
     P_max = 2000.0
-    # Primero verificar si con P_max alcanza
     if presion_final(P_max) < P_MIN_ENTREGA:
         return None, None, None, None, None, None
     
-    for _ in range(50):  # 50 iteraciones es suficiente
+    for _ in range(50):
         P_med = (P_min + P_max) / 2
         pf = presion_final(P_med)
         if pf < P_MIN_ENTREGA:
@@ -157,7 +179,6 @@ def encontrar_pdesc_necesaria(Q, D_in, N_est):
             P_max = P_med
     P_desc_opt = P_max
     
-    # Construir perfil
     distancias = [0.0]
     presiones = [P_RECEPCION]
     potencias = []
@@ -189,7 +210,7 @@ def encontrar_pdesc_necesaria(Q, D_in, N_est):
     return P_desc_opt, P_final_real, distancias, presiones, potencias, temp_max
 
 # ------------------------------------------------------------
-# BARRA LATERAL
+# BARRA LATERAL (AHORA A LA DERECHA)
 # ------------------------------------------------------------
 with st.sidebar:
     st.markdown("## ⚙️ Parámetros de diseño")
@@ -197,17 +218,30 @@ with st.sidebar:
     
     with st.expander("💰 Económicos", expanded=True):
         costo_energia = st.number_input("Costo de energía (USD/kWh)", 0.01, 0.50, 0.05, 0.01)
+        st.markdown('<div class="help-text">💡 Afecta directamente el OPEX (costo operativo anual). A mayor costo, mayor TAC.</div>', unsafe_allow_html=True)
+        
         costo_acero_usd_m = st.number_input("Costo del acero (USD/m)", 100.0, 1000.0, 350.0, 10.0)
+        st.markdown('<div class="help-text">💡 Impacta el CAPEX de la tubería. A mayor costo, mayor inversión inicial.</div>', unsafe_allow_html=True)
+        
         tasa_interes = st.number_input("Tasa de interés (%)", 1.0, 20.0, 8.0) / 100.0
+        st.markdown('<div class="help-text">💡 Usada en el factor CRF. Tasas altas aumentan el costo anualizado del CAPEX.</div>', unsafe_allow_html=True)
+        
         costo_comp_por_HP = st.number_input("Costo compresor (USD/HP)", 800, 2000, 1200, 100)
+        st.markdown('<div class="help-text">💡 Influye en el CAPEX de los compresores. Mayor valor → mayor TAC.</div>', unsafe_allow_html=True)
     
     with st.expander("🛠️ Materiales", expanded=True):
         diametro_sel = st.selectbox("Diámetro comercial", list(TUBERIAS.keys()))
+        st.markdown('<div class="help-text">💡 Diámetros mayores reducen la caída de presión y la potencia necesaria, pero aumentan el CAPEX de tubería.</div>', unsafe_allow_html=True)
+        
         acero_sel = st.selectbox("Grado del acero", list(ACEROS.keys()))
+        st.markdown('<div class="help-text">💡 X60 permite mayor MAOP (presión máxima segura) que X52.</div>', unsafe_allow_html=True)
     
     with st.expander("🌡️ Operación", expanded=True):
         Q_input = st.number_input("Flujo de gas Q (MMscfd)", 100.0, 1500.0, 500.0, 50.0)
+        st.markdown('<div class="help-text">💡 Mayor flujo requiere más presión de descarga y más potencia. Aumenta TAC.</div>', unsafe_allow_html=True)
+        
         N_est = st.slider("Estaciones de compresión (N)", 1, 6, 2, 1)
+        st.markdown('<div class="help-text">💡 Más estaciones reduce la presión de descarga por etapa y la potencia total, pero aumenta el CAPEX en compresores.</div>', unsafe_allow_html=True)
     
     if st.button("🔍 Optimizar configuración (mínimo TAC)", type="primary"):
         st.session_state.run_optimizer = True
@@ -270,7 +304,7 @@ if st.session_state.run_optimizer:
         st.warning("No se encontró configuración factible con estos parámetros.")
 
 # ------------------------------------------------------------
-# DASHBOARD DE RESULTADOS
+# DASHBOARD DE RESULTADOS (tarjetas)
 # ------------------------------------------------------------
 st.markdown("## 📈 Resultados Clave")
 col1, col2, col3 = st.columns(3)
@@ -353,4 +387,4 @@ with st.expander("📐 Detalles técnicos y conversiones de unidades"):
     st.write(f"**Potencia por estación:** " + ", ".join([f"{hp:.0f} HP" for hp in potencias]))
 
 st.markdown("---")
-st.markdown("<p style='text-align:center; color:#666;'>Proyecto Optimización de Procesos | Gemelo Digital Gasoducto Trans-Andino | 2026</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#666;'>Proyecto Optimización de Procesos | Gemelo Digital Gasoducto Trans-Andino | 2026</p>", unsafe_allow_html=True) unsafe_allow_html=True)
