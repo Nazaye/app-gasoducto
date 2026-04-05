@@ -14,11 +14,11 @@ st.markdown("""
     .stApp {
         background-color: #000000;
     }
-    /* Título principal: más grande, Arial, azul aguamarina */
+    /* Título principal: más grande, Arial, azul electrico */
     .titulo-principal {
         font-family: 'Arial', sans-serif;
-        font-size: 42px;
-        color: #7FFFD4;
+        font-size: 2.8rem;
+        color: #00aaff;
         text-align: center;
         font-weight: bold;
         margin-bottom: 20px;
