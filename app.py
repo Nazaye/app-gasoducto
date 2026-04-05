@@ -25,7 +25,7 @@ st.markdown("""
         font-family: 'Arial Black', sans-serif;
         font-size: 2.8rem;          /* Tamaño fijo enorme */
         font-weight: 800;
-        color: #00aaff           /* Acuamarine */
+        color: #7FFFD4          /* Acuamarine */
         text-align: center;
         margin-bottom: 0.2rem;
         letter-spacing: 2px;
