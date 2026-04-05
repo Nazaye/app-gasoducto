@@ -5,107 +5,119 @@ import plotly.graph_objects as go
 from math import sqrt, pow
 
 # ------------------ CONFIGURACIÓN DE LA PÁGINA ------------------
-st.set_page_config(page_title="Optimización Gasoducto Trans-Andino", layout="wide")
+st.set_page_config(page_title="Gasoducto Trans-Andino", layout="wide")
 
-# Estilos personalizados FUERTES
+# Estilos CSS personalizados para homogeneidad
 st.markdown("""
     <style>
-    /* Fondo general negro */
+    /* Fuente global profesional */
+    html, body, .stApp, .stMarkdown, .stText, .stNumberInput, .stSelectbox, .stSlider {
+        font-family: 'Poppins', 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    /* Fondo negro */
     .stApp {
         background-color: #000000;
     }
     
-    /* Título principal: TAMAÑO GIGANTE */
+    /* Título principal: GRANDE, mismo color que las tarjetas */
     .titulo-principal {
-        font-family: 'Arial Black', 'Arial', sans-serif;
-        font-size: 180px;          /* Tamaño fijo enorme */
-        color: #7FFFD4;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 80px;          /* Tamaño fijo enorme */
+        font-weight: 800;
+        color: #7FFFD4;           /* Aguamarina */
         text-align: center;
-        font-weight: 900;
         margin-bottom: 5px;
-        line-height: 1;
+        letter-spacing: 3px;
         text-transform: uppercase;
-        letter-spacing: 5px;
-        text-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-    }
-    /* Para pantallas pequeñas, que se ajuste pero siga siendo grande */
-    @media (max-width: 1000px) {
-        .titulo-principal {
-            font-size: 15vw;       /* 15% del ancho de la ventana */
-        }
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
-    /* Subtítulo principal */
+    /* Subtítulo: más pequeño, blanco, elegante */
     .subtitulo-principal {
-        font-family: 'Courier New', monospace;
-        font-size: 28px;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 22px;
+        font-weight: 300;
         color: #FFFFFF;
         text-align: center;
         margin-top: -10px;
         margin-bottom: 40px;
-        letter-spacing: 2px;
-        font-weight: bold;
+        letter-spacing: 1px;
     }
     
-    /* Subtítulos de sección (RESULTADOS, etc.) */
-    .subtitulo {
-        font-family: 'Georgia', serif;
-        font-size: 32px;
+    /* Encabezados de sección (RESULTADOS, Perfil Hidráulico, etc.) */
+    .seccion-titulo {
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 28px;
+        font-weight: 600;
         color: #FFFFFF;
-        margin-top: 20px;
+        margin-top: 30px;
         margin-bottom: 20px;
-        font-weight: bold;
         border-left: 5px solid #7FFFD4;
         padding-left: 15px;
     }
     
-    /* Estilo para las tarjetas de métricas (fondo azul oscuro) */
+    /* Tarjetas de métricas (mismo color que el título) */
     .metric-card {
-        background-color: #0a2f6c;
-        border-radius: 15px;
-        padding: 20px;
+        background-color: #0a2f6c;   /* Azul oscuro profesional */
+        border-radius: 20px;
+        padding: 25px 15px;
         text-align: center;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4);
         border: 1px solid #2c5a9e;
+        transition: transform 0.2s;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
     }
     .metric-label {
-        font-family: 'Verdana', sans-serif;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
         font-size: 18px;
-        color: #CCCCCC;
-        margin-bottom: 10px;
+        font-weight: 500;
+        color: #DDDDDD;
+        margin-bottom: 12px;
     }
     .metric-value {
-        font-family: 'Arial', sans-serif;
-        font-size: 32px;
-        font-weight: bold;
-        color: #7FFFD4;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 36px;
+        font-weight: 700;
+        color: #7FFFD4;   /* Aguamarina */
         margin: 0;
     }
     .metric-unit {
-        font-family: 'Verdana', sans-serif;
-        font-size: 16px;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 18px;
+        font-weight: 400;
         color: #FFFFFF;
     }
     
-    /* Descripciones cortas amarillo suave */
+    /* Descripciones en sidebar (amarillo suave) */
     .descripcion {
         font-size: 13px;
         color: #FFFACD;
         margin-bottom: 8px;
         font-style: italic;
         background-color: #2E2E2E;
-        padding: 5px;
-        border-radius: 5px;
+        padding: 5px 8px;
+        border-radius: 8px;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+    }
+    
+    /* Ajustes para los expanders de la sidebar */
+    .streamlit-expanderHeader {
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        font-weight: 600;
+        font-size: 18px;
+        color: #7FFFD4;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Título principal con emoji de gasoducto / fuego
+# Títulos
 st.markdown('<p class="titulo-principal">🔥 GASODUCTO TRANS-ANDINO</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitulo-principal">Gemelo digital | Simulación hidráulica & económica</p>', unsafe_allow_html=True)
 
-# ------------------ FUNCIONES DE CÁLCULO (sin cambios, pero las copio completas) ------------------
-# Constantes
+# ------------------ FUNCIONES DE CÁLCULO ------------------
 L_km = 400.0
 L_miles = L_km * 0.621371
 T1_K = 293.15
@@ -235,8 +247,8 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos, pipe_data_ac
         "opex_total": OPEX_total,
     }
 
-# ------------------ BARRA LATERAL (igual que antes) ------------------
-st.sidebar.markdown('<p style="font-size:28px; font-weight:bold; color:#7FFFD4;">⚙️ CONFIGURACIÓN</p>', unsafe_allow_html=True)
+# ------------------ BARRA LATERAL ------------------
+st.sidebar.markdown('<p style="font-size:24px; font-weight:700; color:#7FFFD4; margin-bottom:15px;">⚙️ CONFIGURACIÓN</p>', unsafe_allow_html=True)
 
 pipe_data = pipe_data_base.copy()
 
@@ -264,7 +276,7 @@ with st.sidebar.expander("🔧 OPERACIÓN", expanded=True):
     st.markdown('<div class="descripcion">💡 Más estaciones → reduce presión por etapa, pero sube CAPEX compresores.</div>', unsafe_allow_html=True)
     N_estaciones = st.slider("N° estaciones", min_value=1, max_value=10, value=2, step=1, key="estaciones")
 
-# Aplicar factor de acero a los costos
+# Aplicar factor de acero
 for diam in pipe_data:
     pipe_data[diam]["costo_m"] = pipe_data_base[diam]["costo_m"] * factor_steel
 
@@ -273,15 +285,13 @@ params_economicos = {
     "tasa_interes": tasa_interes,
 }
 
-# ------------------ PANEL PRINCIPAL CON TARJETAS AZULES ------------------
-st.markdown('<p class="subtitulo">📊 RESULTADOS</p>', unsafe_allow_html=True)
+# ------------------ PANEL PRINCIPAL ------------------
+st.markdown('<div class="seccion-titulo">📊 RESULTADOS</div>', unsafe_allow_html=True)
 
 resultados = calcular_perfil(N_estaciones, Q_diseno, diametro, grado_acero, params_economicos, pipe_data)
 
 if resultados:
-    # Usamos columnas y dentro HTML personalizado para las tarjetas
     col1, col2, col3 = st.columns(3)
-    
     with col1:
         st.markdown(f"""
             <div class="metric-card">
@@ -289,7 +299,6 @@ if resultados:
                 <div class="metric-value">${resultados['TAC']:,.0f}</div>
             </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown(f"""
             <div class="metric-card">
@@ -297,7 +306,6 @@ if resultados:
                 <div class="metric-value">{resultados['HP_total']:,.0f} <span class="metric-unit">HP</span></div>
             </div>
         """, unsafe_allow_html=True)
-    
     with col3:
         st.markdown(f"""
             <div class="metric-card">
@@ -306,8 +314,8 @@ if resultados:
             </div>
         """, unsafe_allow_html=True)
     
-    # Gráfico de perfil hidráulico
-    st.markdown('<p class="subtitulo" style="font-size:26px;">📉 Perfil Hidráulico</p>', unsafe_allow_html=True)
+    # Perfil hidráulico
+    st.markdown('<div class="seccion-titulo">📈 PERFIL HIDRÁULICO</div>', unsafe_allow_html=True)
     fig1 = go.Figure()
     fig1.add_trace(go.Scatter(x=resultados['distancias_km'], y=resultados['presiones_psi'],
                              mode='lines+markers', name='Presión del gas',
@@ -319,14 +327,14 @@ if resultados:
         yaxis_title="Presión (psia)",
         plot_bgcolor='#1E1E1E',
         paper_bgcolor='#000000',
-        font=dict(color='white', size=12),
+        font=dict(family="Poppins, Segoe UI, Roboto, sans-serif", color='white', size=12),
         hovermode='x',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig1, use_container_width=True)
     
-    # Gráfico de desglose de costos (sin leyenda)
-    st.markdown('<p class="subtitulo" style="font-size:26px;">📊 Desglose de Costos Anualizados</p>', unsafe_allow_html=True)
+    # Desglose de costos
+    st.markdown('<div class="seccion-titulo">💰 DESGLOSE DE COSTOS ANUALIZADOS</div>', unsafe_allow_html=True)
     costs = resultados['cost_breakdown']
     conceptos = list(costs.keys())
     montos = list(costs.values())
@@ -344,29 +352,29 @@ if resultados:
         yaxis_title="USD",
         plot_bgcolor='#1E1E1E',
         paper_bgcolor='#000000',
-        font=dict(color='white'),
+        font=dict(family="Poppins, Segoe UI, Roboto, sans-serif", color='white'),
         showlegend=False
     )
     st.plotly_chart(fig2, use_container_width=True)
     
-    # Alertas de seguridad
-    st.markdown('<p class="subtitulo" style="font-size:26px;">⚠️ Validación de Seguridad</p>', unsafe_allow_html=True)
+    # Validación de seguridad
+    st.markdown('<div class="seccion-titulo">⚠️ VALIDACIÓN DE SEGURIDAD</div>', unsafe_allow_html=True)
     if resultados['supera_MAOP']:
-        st.error(f"🚨 ALERTA: Descarga {resultados['P_descarga']:.1f} psia > MAOP {resultados['MAOP']:.1f} psia")
+        st.error(f"🚨 ALERTA: Presión de descarga ({resultados['P_descarga']:.1f} psia) > MAOP ({resultados['MAOP']:.1f} psia)")
     else:
-        st.success(f"✅ MAOP: {resultados['P_descarga']:.1f} ≤ {resultados['MAOP']:.1f} psia")
+        st.success(f"✅ MAOP verificado: {resultados['P_descarga']:.1f} ≤ {resultados['MAOP']:.1f} psia")
     
     if resultados['alerta_termica']:
-        st.error(f"🔥 ALERTA: Temperatura máxima {resultados['T2_max_C']:.1f} °C > 65 °C")
+        st.error(f"🔥 ALERTA TÉRMICA: Temperatura máxima = {resultados['T2_max_C']:.1f} °C > 65 °C")
     else:
-        st.success(f"✅ Temperatura: {resultados['T2_max_C']:.1f} °C ≤ 65 °C")
+        st.success(f"✅ Temperatura de descarga: {resultados['T2_max_C']:.1f} °C ≤ 65 °C")
     
     if resultados['alerta_entrega']:
-        st.error(f"⚠️ Presión final {resultados['presion_final']:.1f} psia < 500 psia")
+        st.error(f"⚠️ Presión final de entrega = {resultados['presion_final']:.1f} psia < 500 psia")
     else:
-        st.success(f"✅ Presión entrega: {resultados['presion_final']:.1f} psia")
+        st.success(f"✅ Presión de entrega: {resultados['presion_final']:.1f} psia ≥ 500 psia")
     
-    with st.expander("🔍 Detalles técnicos del diseño"):
+    with st.expander("🔍 Ver detalles técnicos del diseño"):
         st.write(f"**Diámetro interno:** {(pipe_data[diametro]['D_ext_mm'] - 2*pipe_data[diametro]['t_mm'])/25.4:.2f} pulg")
         st.write(f"**Presión de descarga por estación:** {resultados['P_descarga']:.1f} psia")
         st.write(f"**CAPEX total:** ${resultados['capex_total']:,.0f}")
@@ -377,6 +385,6 @@ if resultados:
             CRF = i * (1+i)**n / ((1+i)**n - 1)
         else:
             CRF = 1/n
-        st.write(f"**CRF (i={tasa_interes}%, 20 años):** {CRF:.4f}")
+        st.write(f"**Factor CRF (i={tasa_interes}%, 20 años):** {CRF:.4f}")
 else:
-    st.error("Error en los cálculos. Revise los valores ingresados.")
+    st.error("No se pudo calcular con los parámetros actuales. Revise los valores ingresados.")
