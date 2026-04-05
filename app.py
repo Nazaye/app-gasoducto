@@ -80,7 +80,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">🛢️ GASODUCTO TRANS-ANDINO </div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🛢️ GASODUCTO \n TRANS-ANDINO </div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Gemelo Digital | Simulación Hidráulica & Económica </div>', unsafe_allow_html=True)
 st.markdown("---")
 
