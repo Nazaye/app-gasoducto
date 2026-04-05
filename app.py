@@ -399,3 +399,4 @@ with st.expander("📐 Detalles técnicos y conversiones de unidades"):
 
 st.markdown("---")
 st.markdown("<p style='text-align:center; color:#666;'>Proyecto Optimización de Procesos | Gemelo Digital Gasoducto Trans-Andino | 2026</p>", unsafe_allow_html=True)
+
