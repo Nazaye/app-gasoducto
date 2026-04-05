@@ -23,9 +23,9 @@ st.markdown("""
     /* Título principal: GRANDE, mismo color que las tarjetas */
     .titulo-principal {
         font-family: 'Poppins', 'Segoe UI', sans-serif;
-        font-size: 255;          /* Tamaño fijo enorme */
+        font-size: 80px;          /* Tamaño fijo enorme */
         font-weight: 800;
-        color: #0a2f6c;           /* Azul navy */
+        color: #7FFFD4;           /* Acuamarine */
         text-align: center;
         margin-bottom: 5px;
         letter-spacing: 2px;
@@ -59,7 +59,7 @@ st.markdown("""
     
     /* Tarjetas de métricas (mismo color que el título) */
     .metric-card {
-        background-color: #0a2f6c;   /* Azul oscuro profesional */
+        background-color: #ccccc;   /* Azul os */
         border-radius: 20px;
         padding: 25px 15px;
         text-align: center;
