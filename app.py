@@ -1,4 +1,4 @@
-# app.py 
+# app.py - Versión corregida (ecuaciones exactas del PDF)
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -12,7 +12,6 @@ st.set_page_config(page_title="🛢️ Gasoducto", layout="wide", initial_sideba
 
 st.markdown("""
 <style>
-    /* Mover la barra lateral a la derecha */
     section[data-testid="stSidebar"] {
         order: 2;
         min-width: 380px !important;
@@ -21,17 +20,10 @@ st.markdown("""
         border-left: 1px solid #2c3e50;
         border-right: none;
     }
-    /* El contenido principal queda a la izquierda */
-    .main > div {
-        order: 1;
-    }
-    .stApp {
-        background-color: #0a0c10;
-    }
+    .main > div { order: 1; }
+    .stApp { background-color: #0a0c10; }
     .stMarkdown, .stText, .stNumberInput label, .stSelectbox label, 
-    .stSlider label, .stMetric label {
-        color: #ffffff !important;
-    }
+    .stSlider label, .stMetric label { color: #ffffff !important; }
     .main-title {
         font-family: 'Arial Black', sans-serif;
         font-size: 2.8rem;
@@ -55,13 +47,8 @@ st.markdown("""
         text-align: center;
         border-top: 4px solid #00aaff;
     }
-    h1, h2, h3 {
-        color: #00aaff !important;
-        font-weight: 600;
-    }
-    hr {
-        border-color: #2c3e50;
-    }
+    h1, h2, h3 { color: #00aaff !important; font-weight: 600; }
+    hr { border-color: #2c3e50; }
     .help-text {
         font-size: 0.75rem;
         color: #88aacc !important;
@@ -80,12 +67,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">🛢️ GASODUCTO TRANS-ANDINO </div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle"> Gemelo Digital | Simulación Hidráulica & Económica </div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🛢️ GASODUCTO TRANS-ANDINO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">| Gemelo Digital | Simulación hidráulica & optimización económica |/div>', unsafe_allow_html=True)
 st.markdown("---")
 
 # ------------------------------------------------------------
-# BASE DE DATOS TÉCNICA
+# BASE DE DATOS TÉCNICA (PDF)
 # ------------------------------------------------------------
 TUBERIAS = {
     "12 pulgadas": {"D_ext_mm": 323.8, "t_mm": 10.31, "costo_base": 185},
@@ -100,102 +87,123 @@ ACEROS = {
 }
 
 # ------------------------------------------------------------
-# PARÁMETROS FÍSICOS
+# PARÁMETROS FÍSICOS (caso base del PDF)
 # ------------------------------------------------------------
 L_TOTAL_KM = 400.0
-P_RECEPCION = 800.0
-P_MIN_ENTREGA = 500.0
+P_RECEPCION = 800.0          # psia
+P_MIN_ENTREGA = 500.0        # psia
 T_SUC_C = 20.0
-T_SUC_R = (T_SUC_C + 273.15) * 9/5
+T_SUC_R = (T_SUC_C + 273.15) * 9/5   # Rankine
 GAMMA = 0.65
 Z = 0.90
 K = 1.30
-ETA_COMP = 0.85
+ETA_COMP = 0.85              # eficiencia del compresor
 HORAS_ANUALES = 8000
 VIDA_PROYECTO = 20
-CONST_WEYMOUTH = 433.5
-E_HID = 1.0
-MW_AIRE = 28.97
-MW_GAS = GAMMA * MW_AIRE
+CONST_WEYMOUTH = 433.5        # constante de la ecuación de Weymouth (PDF)
+E_HID = 1.0                   # eficiencia de la tubería (se asume 1.0)
+R_UNIV = 10.731               # psia·ft³/(lbmol·°R) - constante universal
 
 # ------------------------------------------------------------
-# FUNCIONES AUXILIARES
+# FUNCIONES SEGÚN EL ENUNCIADO
 # ------------------------------------------------------------
 def crf(tasa, n=VIDA_PROYECTO):
+    """Factor de recuperación de capital (anualización)"""
     return 1.0 / n if tasa == 0 else tasa * (1 + tasa)**n / ((1 + tasa)**n - 1)
 
 def maop_barlow(SMYS_psi, t_mm, D_ext_mm, F):
+    """Presión máxima admisible (Barlow) - psia"""
     t_in = t_mm / 25.4
     D_in = D_ext_mm / 25.4
     return 2.0 * SMYS_psi * t_in * F / D_in
 
 def caida_presion_weymouth(P1, Q, L_mi, D_in):
+    """
+    Ecuación de Weymouth (PDF)
+    P1^2 - P2^2 = 433.5 * (Q/E)^2 * (L * γ * T * Z) / D^5.33
+    Retorna P2 en psia, o None si es imposible.
+    """
     term = CONST_WEYMOUTH * (Q / E_HID)**2 * (L_mi * GAMMA * T_SUC_R * Z) / (D_in**5.33)
     P2_cuad = P1**2 - term
     return np.sqrt(P2_cuad) if P2_cuad > 0 else None
 
-def potencia_compresor(Q, P_suc, P_desc, T_suc_R, Z_val, k, MW, eta):
+def potencia_compresor(Q, P_suc, P_desc, T_suc_R, Z_val, k, eta):
+    """
+    Ecuación de potencia del PDF:
+    HP = (Q * 1e6)/(24*3600*η) * (Z R T1)/(k-1) * [ (P_out/P_in)^((k-1)/k) - 1 ]
+    Con R = 10.731 psia·ft³/(lbmol·°R)
+    """
     if P_suc <= 0 or P_desc <= P_suc:
         return 0.0
     rp = P_desc / P_suc
-    n = (k - 1) / k
-    Q_scf_s = Q * 1e6 / (24 * 3600)
-    P_base = 14.7
-    T_base_R = 520.0
-    R_univ = 1545.4
-    rho_std = (P_base * 144 * MW) / (R_univ * T_base_R)
-    m_dot = Q_scf_s * rho_std
-    H_p = (Z_val * R_univ * T_suc_R / MW) * (1 / n) * (rp**n - 1)
-    return (m_dot * H_p) / (550 * eta)
+    Q_scf_s = Q * 1e6 / (24 * 3600)          # scf/s
+    term = (Z_val * R_UNIV * T_suc_R) / (k - 1)
+    factor = (rp ** ((k-1)/k) - 1)
+    # Potencia en (psia * ft³/s)
+    potencia_psia_ft3_s = Q_scf_s * term * factor / eta
+    # Convertir a HP: 1 psia = 144 lbf/ft², 1 HP = 550 ft·lbf/s
+    HP = potencia_psia_ft3_s * 144 / 550
+    return max(0, HP)
 
 def temp_descarga(T_suc_R, P_suc, P_desc, k):
-    T2_R = T_suc_R * (P_desc / P_suc)**((k-1)/k)
-    return (T2_R - 491.67) * 5/9
+    """Ecuación de temperatura de descarga (PDF)"""
+    T2_R = T_suc_R * (P_desc / P_suc) ** ((k-1)/k)
+    return (T2_R - 491.67) * 5/9   # convertir a Celsius
 
 def encontrar_pdesc_necesaria(Q, D_in, N_est):
-    L_seg_mi = (L_TOTAL_KM * 0.621371) / N_est
+    """
+    Determina la presión de descarga (P_desc) que cumple que la presión final
+    después de N_est segmentos sea al menos P_MIN_ENTREGA.
+    Retorna (P_desc, P_final, distancias, presiones, potencias, T_max_C)
+    """
+    L_seg_mi = (L_TOTAL_KM * 0.621371) / N_est   # millas por segmento
     L_seg_km = L_TOTAL_KM / N_est
-    
+
+    # Función que calcula la presión final dado un P_desc (modelo correcto)
     def presion_final(P_desc):
-        P_actual = P_RECEPCION
+        P_suc = P_RECEPCION
         for _ in range(N_est):
-            P_actual = P_desc
-            P_actual = caida_presion_weymouth(P_actual, Q, L_seg_mi, D_in)
-            if P_actual is None:
+            # Comprimir desde P_suc hasta P_desc
+            P_after_comp = P_desc
+            # Caída en el tramo
+            P_suc = caida_presion_weymouth(P_after_comp, Q, L_seg_mi, D_in)
+            if P_suc is None:
                 return -1.0
-        return P_actual
-    
-    P_min = P_RECEPCION
-    P_max = 2000.0
-    if presion_final(P_max) < P_MIN_ENTREGA:
-        return None, None, None, None, None, None
-    
+        return P_suc
+
+    # Búsqueda binaria de la P_desc mínima que cumple presión final >= 500 psia
+    low = P_RECEPCION
+    high = 2000.0   # límite superior razonable
+    if presion_final(high) < P_MIN_ENTREGA:
+        return None, None, None, None, None, None  # inviable
+
     for _ in range(50):
-        P_med = (P_min + P_max) / 2
-        pf = presion_final(P_med)
-        if pf < P_MIN_ENTREGA:
-            P_min = P_med
+        mid = (low + high) / 2
+        if presion_final(mid) < P_MIN_ENTREGA:
+            low = mid
         else:
-            P_max = P_med
-    P_desc_opt = P_max
-    
+            high = mid
+    P_desc_opt = high
+
+    # Reconstrucción del perfil completo (para gráfico y potencias)
     distancias = [0.0]
     presiones = [P_RECEPCION]
     potencias = []
     temp_max = 0.0
     P_actual = P_RECEPCION
-    
+
     for i in range(N_est):
         P_desc = P_desc_opt
         T_desc_C = temp_descarga(T_SUC_R, P_actual, P_desc, K)
         temp_max = max(temp_max, T_desc_C)
-        HP = potencia_compresor(Q, P_actual, P_desc, T_SUC_R, Z, K, MW_GAS, ETA_COMP)
+        HP = potencia_compresor(Q, P_actual, P_desc, T_SUC_R, Z, K, ETA_COMP)
         potencias.append(HP)
+        # Punto de salida del compresor (misma distancia, presión elevada)
         distancias.append(distancias[-1])
         presiones.append(P_desc)
-        
+        # Tramo de tubería: varios puntos para la curva
         num_puntos = 30
-        for j in range(1, num_puntos+1):
+        for j in range(1, num_puntos + 1):
             frac = j / num_puntos
             L_parcial_mi = frac * L_seg_mi
             dist_km = distancias[-1] + frac * L_seg_km
@@ -204,13 +212,14 @@ def encontrar_pdesc_necesaria(Q, D_in, N_est):
                 P_inter = 0.0
             distancias.append(dist_km)
             presiones.append(P_inter)
+        # Actualizar presión de succión para la siguiente etapa
         P_actual = presiones[-1]
-    
+
     P_final_real = presiones[-1]
     return P_desc_opt, P_final_real, distancias, presiones, potencias, temp_max
 
 # ------------------------------------------------------------
-# BARRA LATERAL (AHORA A LA DERECHA)
+# BARRA LATERAL (derecha) - igual a la tuya
 # ------------------------------------------------------------
 with st.sidebar:
     st.markdown("## ⚙️ Parámetros de diseño")
@@ -255,12 +264,12 @@ dat_tubo = TUBERIAS[diametro_sel]
 dat_ac = ACEROS[acero_sel]
 D_ext_mm = dat_tubo["D_ext_mm"]
 t_mm = dat_tubo["t_mm"]
-D_in = (D_ext_mm - 2*t_mm) / 25.4
+D_in = (D_ext_mm - 2*t_mm) / 25.4          # pulgadas
 MAOP = maop_barlow(dat_ac["SMYS_psi"], t_mm, D_ext_mm, dat_ac["F"])
 
 resultado = encontrar_pdesc_necesaria(Q_input, D_in, N_est)
 if resultado[0] is None:
-    st.error("❌ Diseño inviable: incluso con presión máxima no se alcanza la presión de entrega. Aumente diámetro o número de estaciones.")
+    st.error("❌ Diseño inviable: incluso con presión máxima de 2000 psia no se alcanza la presión de entrega. Aumente el diámetro o el número de estaciones.")
     st.stop()
 
 P_desc_opt, P_final_real, distancias, presiones, potencias, T_max_C = resultado
@@ -274,7 +283,7 @@ OPEX = HP_total * 0.7457 * HORAS_ANUALES * costo_energia
 TAC = CAPEX * CRF_val + OPEX
 
 # ------------------------------------------------------------
-# OPTIMIZADOR
+# OPTIMIZADOR (corregido también)
 # ------------------------------------------------------------
 if st.session_state.run_optimizer:
     best_tac = float('inf')
@@ -349,7 +358,7 @@ fig_c.update_layout(template="plotly_dark", height=380, font=dict(color="#ffffff
 st.plotly_chart(fig_c, use_container_width=True)
 
 # ------------------------------------------------------------
-# VALIDACIONES
+# VALIDACIONES DE SEGURIDAD
 # ------------------------------------------------------------
 st.markdown("## ✅ Validaciones de Seguridad")
 colA, colB = st.columns(2)
