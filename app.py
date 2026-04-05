@@ -1,4 +1,4 @@
-# app.py - Versión corregida (ecuaciones exactas del PDF)
+# app.py - Versión final corregida (ecuaciones exactas del PDF)
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -8,7 +8,7 @@ import plotly.express as px
 # ------------------------------------------------------------
 # CONFIGURACIÓN DE LA PÁGINA Y ESTILOS (sidebar a la derecha)
 # ------------------------------------------------------------
-st.set_page_config(page_title="🛢️ Gasoducto", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="🛢️ Gasoducto Trans-Andino", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
@@ -68,7 +68,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="main-title">🛢️ GASODUCTO TRANS-ANDINO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Gemelo Digital | Simulación hidráulica & optimización económica</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Simulación hidráulica y optimización económica | Ecuaciones del enunciado</div>', unsafe_allow_html=True)
 st.markdown("---")
 
 # ------------------------------------------------------------
@@ -103,6 +103,8 @@ VIDA_PROYECTO = 20
 CONST_WEYMOUTH = 433.5        # constante de la ecuación de Weymouth (PDF)
 E_HID = 1.0                   # eficiencia de la tubería (se asume 1.0)
 R_UNIV = 10.731               # psia·ft³/(lbmol·°R) - constante universal
+MW_AIRE = 28.97
+MW_GAS = GAMMA * MW_AIRE
 
 # ------------------------------------------------------------
 # FUNCIONES SEGÚN EL ENUNCIADO
@@ -219,7 +221,7 @@ def encontrar_pdesc_necesaria(Q, D_in, N_est):
     return P_desc_opt, P_final_real, distancias, presiones, potencias, temp_max
 
 # ------------------------------------------------------------
-# BARRA LATERAL (derecha) - igual a la tuya
+# BARRA LATERAL (derecha)
 # ------------------------------------------------------------
 with st.sidebar:
     st.markdown("## ⚙️ Parámetros de diseño")
@@ -283,7 +285,7 @@ OPEX = HP_total * 0.7457 * HORAS_ANUALES * costo_energia
 TAC = CAPEX * CRF_val + OPEX
 
 # ------------------------------------------------------------
-# OPTIMIZADOR (corregido también)
+# OPTIMIZADOR (corregido)
 # ------------------------------------------------------------
 if st.session_state.run_optimizer:
     best_tac = float('inf')
@@ -388,7 +390,7 @@ if P_RECEPCION > MAOP:
 if recomendaciones:
     st.markdown('<div class="recommendation-box"><strong>💡 Recomendaciones:</strong><br>' + "<br>".join(recomendaciones) + '</div>', unsafe_allow_html=True)
 
-# Detalles técnicos
+# Detalles técnicos (Línea corregida, sin errores de sintaxis)
 with st.expander("📐 Detalles técnicos y conversiones de unidades"):
     st.write(f"**Diámetro interno:** `{D_in:.3f} in` | **Espesor:** `{t_mm/25.4:.3f} in`")
     st.write(f"**MAOP (Barlow):** `{MAOP:.0f} psia` | **Peso molecular gas:** `{MW_GAS:.2f} lb/lbmol`")
