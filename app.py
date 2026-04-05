@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from math import sqrt, pow
 
 # ------------------ CONFIGURACIÓN DE LA PÁGINA ------------------
-st.set_page_config(page_title="Gasoducto Trans-Andino", layout="wide")
+st.set_page_config(page_title="Optimización Gasoducto Trans-Andino", layout="wide")
 
 # Estilos personalizados
 st.markdown("""
