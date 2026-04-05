@@ -19,15 +19,15 @@ st.markdown("""
     .stApp {
         background-color: #000000;
     }
-    
+
     /* Título principal: GRANDE, mismo color que las tarjetas */
     .titulo-principal {
-        font-family: 'Poppins', 'Segoe UI', sans-serif;
-        font-size: 80px;          /* Tamaño fijo enorme */
+        font-family: 'Arial Black', sans-serif;
+        font-size: 2.8rem;          /* Tamaño fijo enorme */
         font-weight: 800;
-        color: #7FFFD4;           /* Acuamarine */
+        color: #00aaff           /* Acuamarine */
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 0.2rem;
         letter-spacing: 2px;
         text-transform: uppercase;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
