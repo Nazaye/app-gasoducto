@@ -8,7 +8,7 @@ import plotly.express as px
 # ------------------------------------------------------------
 # CONFIGURACIÓN DE LA PÁGINA Y ESTILOS (sidebar a la derecha)
 # ------------------------------------------------------------
-st.set_page_config(page_title="🛢️ Gasoducto Trans-Andino 🛢️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="🛢️ Gasoducto", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
@@ -80,7 +80,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">🛢️ GASODUCTO TRANS-ANDINO 🛢️</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🛢️ GASODUCTO TRANS-ANDINO </div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Gemelo Digital | Simulación Hidráulica & Económica </div>', unsafe_allow_html=True)
 st.markdown("---")
 
