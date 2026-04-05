@@ -7,53 +7,90 @@ from math import sqrt, pow
 # ------------------ CONFIGURACIÓN DE LA PÁGINA ------------------
 st.set_page_config(page_title="Optimización Gasoducto Trans-Andino", layout="wide")
 
-# Estilos personalizados
+# Estilos personalizados FUERTES
 st.markdown("""
     <style>
     /* Fondo general negro */
     .stApp {
         background-color: #000000;
     }
-    /* Título principal: tamaño 110, mayúsculas, azul aguamarina */
+    
+    /* Título principal: TAMAÑO GIGANTE */
     .titulo-principal {
-        font-family: 'Arial', sans-serif;
-        font-size: 110px;
+        font-family: 'Arial Black', 'Arial', sans-serif;
+        font-size: 180px;          /* Tamaño fijo enorme */
         color: #7FFFD4;
         text-align: center;
-        font-weight: bold;
+        font-weight: 900;
         margin-bottom: 5px;
-        line-height: 1.1;
+        line-height: 1;
         text-transform: uppercase;
+        letter-spacing: 5px;
+        text-shadow: 4px 4px 8px rgba(0,0,0,0.5);
     }
-    /* Subtítulo: fuente cursiva / serif blanca más pequeña */
+    /* Para pantallas pequeñas, que se ajuste pero siga siendo grande */
+    @media (max-width: 1000px) {
+        .titulo-principal {
+            font-size: 15vw;       /* 15% del ancho de la ventana */
+        }
+    }
+    
+    /* Subtítulo principal */
     .subtitulo-principal {
         font-family: 'Courier New', monospace;
-        font-size: 20px;
-        color: #FFFFFF;
-        text-align: center;
-        margin-top: 0px;
-        margin-bottom: 30px;
-        letter-spacing: 1px;
-    }
-    /* Subtítulos de sección (Resultados, etc.) */
-    .subtitulo {
-        font-family: 'Georgia', serif;
         font-size: 28px;
         color: #FFFFFF;
-        margin-top: 20px;
-        margin-bottom: 10px;
+        text-align: center;
+        margin-top: -10px;
+        margin-bottom: 40px;
+        letter-spacing: 2px;
         font-weight: bold;
     }
-    /* Texto normal blanco */
-    .texto-normal {
-        font-family: 'Verdana', sans-serif;
-        font-size: 14px;
-        color: #F0F0F0;
+    
+    /* Subtítulos de sección (RESULTADOS, etc.) */
+    .subtitulo {
+        font-family: 'Georgia', serif;
+        font-size: 32px;
+        color: #FFFFFF;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        border-left: 5px solid #7FFFD4;
+        padding-left: 15px;
     }
-    /* Descripciones cortas en amarillo suave */
+    
+    /* Estilo para las tarjetas de métricas (fondo azul oscuro) */
+    .metric-card {
+        background-color: #0a2f6c;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        border: 1px solid #2c5a9e;
+    }
+    .metric-label {
+        font-family: 'Verdana', sans-serif;
+        font-size: 18px;
+        color: #CCCCCC;
+        margin-bottom: 10px;
+    }
+    .metric-value {
+        font-family: 'Arial', sans-serif;
+        font-size: 32px;
+        font-weight: bold;
+        color: #7FFFD4;
+        margin: 0;
+    }
+    .metric-unit {
+        font-family: 'Verdana', sans-serif;
+        font-size: 16px;
+        color: #FFFFFF;
+    }
+    
+    /* Descripciones cortas amarillo suave */
     .descripcion {
         font-size: 13px;
-        color: #FFFACD;   /* amarillo suave */
+        color: #FFFACD;
         margin-bottom: 8px;
         font-style: italic;
         background-color: #2E2E2E;
@@ -63,13 +100,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Título principal (mayúsculas, tamaño 110)
-st.markdown('<p class="titulo-principal">GASODUCTO TRANS-ANDINO</p>', unsafe_allow_html=True)
-# Subtítulo
+# Título principal con emoji de gasoducto / fuego
+st.markdown('<p class="titulo-principal">🔥 GASODUCTO TRANS-ANDINO</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitulo-principal">Gemelo digital | Simulación hidráulica & económica</p>', unsafe_allow_html=True)
 
-# ------------------ FUNCIONES DE CÁLCULO ------------------
-# Constantes y parámetros fijos
+# ------------------ FUNCIONES DE CÁLCULO (sin cambios, pero las copio completas) ------------------
+# Constantes
 L_km = 400.0
 L_miles = L_km * 0.621371
 T1_K = 293.15
@@ -80,7 +116,6 @@ k = 1.28
 eta = 0.85
 horas_anio = 8760
 
-# Tabla de tuberías base
 pipe_data_base = {
     "12\"": {"D_ext_mm": 323.8, "t_mm": 10.31, "costo_m": 185},
     "16\"": {"D_ext_mm": 406.4, "t_mm": 12.70, "costo_m": 260},
@@ -200,13 +235,11 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos, pipe_data_ac
         "opex_total": OPEX_total,
     }
 
-# ------------------ BARRA LATERAL (EXPANDERS CON DESCRIPCIONES CORTAS) ------------------
-st.sidebar.markdown('<p style="font-size:24px; font-weight:bold; color:#7FFFD4;">⚙️ CONFIGURACIÓN</p>', unsafe_allow_html=True)
+# ------------------ BARRA LATERAL (igual que antes) ------------------
+st.sidebar.markdown('<p style="font-size:28px; font-weight:bold; color:#7FFFD4;">⚙️ CONFIGURACIÓN</p>', unsafe_allow_html=True)
 
-# Copia de trabajo de pipe_data
 pipe_data = pipe_data_base.copy()
 
-# Sección Económicos
 with st.sidebar.expander("💰 PARÁMETROS ECONÓMICOS", expanded=True):
     st.markdown('<div class="descripcion">💡 Mayor costo energía → mayor OPEX (gasto anual).</div>', unsafe_allow_html=True)
     costo_energia = st.number_input("USD/kWh", min_value=0.01, max_value=1.0, value=0.05, step=0.01, format="%.3f", key="energia")
@@ -217,7 +250,6 @@ with st.sidebar.expander("💰 PARÁMETROS ECONÓMICOS", expanded=True):
     st.markdown('<div class="descripcion">💡 Multiplica costo del acero (simula variaciones de mercado).</div>', unsafe_allow_html=True)
     factor_steel = st.number_input("Factor acero", min_value=0.5, max_value=2.0, value=1.0, step=0.05, key="acero")
 
-# Sección Tubería y Material
 with st.sidebar.expander("📏 TUBERÍA Y MATERIAL", expanded=True):
     st.markdown('<div class="descripcion">💡 Mayor diámetro → menor caída presión, pero más CAPEX.</div>', unsafe_allow_html=True)
     diametro = st.selectbox("Diámetro nominal", list(pipe_data.keys()), key="diam")
@@ -225,7 +257,6 @@ with st.sidebar.expander("📏 TUBERÍA Y MATERIAL", expanded=True):
     st.markdown('<div class="descripcion">💡 Mayor grado (X60) soporta más presión (MAOP más alto).</div>', unsafe_allow_html=True)
     grado_acero = st.selectbox("Grado del acero", list(steel_data.keys()), key="grado")
 
-# Sección Operación
 with st.sidebar.expander("🔧 OPERACIÓN", expanded=True):
     st.markdown('<div class="descripcion">💡 Más flujo → más pérdida de presión y más potencia requerida.</div>', unsafe_allow_html=True)
     Q_diseno = st.number_input("Flujo (MMscfd)", min_value=100, max_value=1500, value=500, step=10, key="flujo")
@@ -233,7 +264,7 @@ with st.sidebar.expander("🔧 OPERACIÓN", expanded=True):
     st.markdown('<div class="descripcion">💡 Más estaciones → reduce presión por etapa, pero sube CAPEX compresores.</div>', unsafe_allow_html=True)
     N_estaciones = st.slider("N° estaciones", min_value=1, max_value=10, value=2, step=1, key="estaciones")
 
-# Aplicar multiplicador del acero a los costos de tubería
+# Aplicar factor de acero a los costos
 for diam in pipe_data:
     pipe_data[diam]["costo_m"] = pipe_data_base[diam]["costo_m"] * factor_steel
 
@@ -242,41 +273,60 @@ params_economicos = {
     "tasa_interes": tasa_interes,
 }
 
-# ------------------ PANEL PRINCIPAL ------------------
-st.markdown('<p class="subtitulo">📊 RESULTADOS</p>', unsafe_allow_html=True)  # Cambiado de Dashboard a Resultados
+# ------------------ PANEL PRINCIPAL CON TARJETAS AZULES ------------------
+st.markdown('<p class="subtitulo">📊 RESULTADOS</p>', unsafe_allow_html=True)
 
 resultados = calcular_perfil(N_estaciones, Q_diseno, diametro, grado_acero, params_economicos, pipe_data)
 
 if resultados:
+    # Usamos columnas y dentro HTML personalizado para las tarjetas
     col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("💰 TAC (USD/año)", f"${resultados['TAC']:,.0f}")
-    with col2:
-        st.metric("⚙️ Potencia total (HP)", f"{resultados['HP_total']:,.0f} HP")
-    with col3:
-        st.metric("📉 Presión final (psia)", f"{resultados['presion_final']:.1f}")
     
-    # Gráfico de perfil hidráulico (con leyenda)
-    st.markdown('<p class="subtitulo" style="font-size:22px;">📉 Perfil Hidráulico</p>', unsafe_allow_html=True)
+    with col1:
+        st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">💰 TAC (USD/año)</div>
+                <div class="metric-value">${resultados['TAC']:,.0f}</div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">⚙️ Potencia total</div>
+                <div class="metric-value">{resultados['HP_total']:,.0f} <span class="metric-unit">HP</span></div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">📉 Presión final</div>
+                <div class="metric-value">{resultados['presion_final']:.1f} <span class="metric-unit">psia</span></div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # Gráfico de perfil hidráulico
+    st.markdown('<p class="subtitulo" style="font-size:26px;">📉 Perfil Hidráulico</p>', unsafe_allow_html=True)
     fig1 = go.Figure()
     fig1.add_trace(go.Scatter(x=resultados['distancias_km'], y=resultados['presiones_psi'],
                              mode='lines+markers', name='Presión del gas',
-                             line=dict(color='#7FFFD4', width=3),
-                             marker=dict(size=6, color='#FFD700')))
+                             line=dict(color='#7FFFD4', width=4),
+                             marker=dict(size=8, color='#FFD700')))
     fig1.update_layout(
         title="Presión vs Distancia a lo largo del gasoducto",
         xaxis_title="Distancia (km)",
         yaxis_title="Presión (psia)",
         plot_bgcolor='#1E1E1E',
         paper_bgcolor='#000000',
-        font=dict(color='white'),
+        font=dict(color='white', size=12),
         hovermode='x',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig1, use_container_width=True)
     
-    # Gráfico de desglose de costos (SIN leyenda)
-    st.markdown('<p class="subtitulo" style="font-size:22px;">📊 Desglose de Costos Anualizados</p>', unsafe_allow_html=True)
+    # Gráfico de desglose de costos (sin leyenda)
+    st.markdown('<p class="subtitulo" style="font-size:26px;">📊 Desglose de Costos Anualizados</p>', unsafe_allow_html=True)
     costs = resultados['cost_breakdown']
     conceptos = list(costs.keys())
     montos = list(costs.values())
@@ -295,12 +345,12 @@ if resultados:
         plot_bgcolor='#1E1E1E',
         paper_bgcolor='#000000',
         font=dict(color='white'),
-        showlegend=False   # Leyenda eliminada del gráfico de barras
+        showlegend=False
     )
     st.plotly_chart(fig2, use_container_width=True)
     
     # Alertas de seguridad
-    st.markdown('<p class="subtitulo" style="font-size:22px;">⚠️ Validación de Seguridad</p>', unsafe_allow_html=True)
+    st.markdown('<p class="subtitulo" style="font-size:26px;">⚠️ Validación de Seguridad</p>', unsafe_allow_html=True)
     if resultados['supera_MAOP']:
         st.error(f"🚨 ALERTA: Descarga {resultados['P_descarga']:.1f} psia > MAOP {resultados['MAOP']:.1f} psia")
     else:
