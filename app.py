@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from math import sqrt, pow
 
 # ------------------ CONFIGURACIÓN DE LA PÁGINA ------------------
-st.set_page_config(page_title="Gasoducto Trans-Andino", layout="wide")
+st.set_page_config(page_title=" 🛢️ Gasoducto Trans-Andino", layout="wide")
 
 # Estilos personalizados (fondo negro, letras, etc.)
 st.markdown("""
@@ -14,27 +14,28 @@ st.markdown("""
     .stApp {
         background-color: #000000;
     }
-    /* Título principal: Arial 70, azul aguamarina */
+    /* Título principal: más grande, Arial, azul aguamarina */
     .titulo-principal {
         font-family: 'Arial', sans-serif;
-        font-size: 70px;
+        font-size: 42px;
         color: #7FFFD4;
         text-align: center;
         font-weight: bold;
+        margin-bottom: 20px;
     }
-    /* Subtítulos: otra fuente bonita (Georgia) blanca */
+    /* Subtítulos: Georgia blanca */
     .subtitulo {
         font-family: 'Georgia', serif;
-        font-size: 18px;
+        font-size: 22px;
         color: #FFFFFF;
-        margin-top: 30px;
-        margin-bottom: 20px;
+        margin-top: 20px;
+        margin-bottom: 10px;
         font-weight: bold;
     }
     /* Texto normal blanco */
     .texto-normal {
         font-family: 'Verdana', sans-serif;
-        font-size: 20px;
+        font-size: 14px;
         color: #F0F0F0;
     }
     /* Fondo de los bloques de métricas y alertas */
@@ -43,11 +44,18 @@ st.markdown("""
         border-radius: 10px;
         padding: 10px;
     }
+    /* Estilo para las descripciones en los expanders */
+    .descripcion {
+        font-size: 13px;
+        color: #CCCCCC;
+        margin-bottom: 10px;
+        font-style: italic;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Título principal
-st.markdown('<p class="titulo-principal">📊 Gasoducto Trans-Andino</p>', unsafe_allow_html=True)
+# Título principal más grande
+st.markdown('<p class="titulo-principal">📊 Optimización y Simulación Digital<br>Gasoducto Trans-Andino</p>', unsafe_allow_html=True)
 
 # ------------------ FUNCIONES DE CÁLCULO ------------------
 # Constantes y parámetros fijos
@@ -123,9 +131,7 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos):
     distancias_km = []
     presiones_psi = []
     dist_actual = 0.0
-    # Presión en inicio antes de comprimir: 800 psia
     # Estación 1: succión = 800, descarga = P_desc_psi
-    # Luego cada segmento baja hasta sqrt(P_desc^2 - K_seg) = 500 psia
     for i in range(N):
         # punto justo después de la compresión (inicio del segmento i)
         distancias_km.append(dist_actual)
@@ -145,8 +151,7 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos):
     # Primera estación: succión 800 psia
     P_suc = 800.0
     r = P_desc_psi / P_suc
-    # Potencia fórmula empírica común en industria: HP = 0.0857 * Q * P_suc * (r^((k-1)/k)-1) / eta
-    # (válida para Q en MMscfd, P en psia)
+    # Fórmula empírica: HP = 0.0857 * Q * P_suc * (r^((k-1)/k)-1) / eta
     factor = 0.0857
     HP_est = factor * Q * P_suc * (pow(r, (k-1)/k) - 1) / eta
     HP_total += HP_est
@@ -157,7 +162,7 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos):
     if T2_C > T2_max_C:
         T2_max_C = T2_C
     
-    # Estaciones 2 a N (succión siempre 500 psia, porque así lo impone el diseño)
+    # Estaciones 2 a N (succión siempre 500 psia)
     for _ in range(1, N):
         P_suc = 500.0
         r = P_desc_psi / P_suc
@@ -169,10 +174,9 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos):
         if T2_C > T2_max_C:
             T2_max_C = T2_C
     
-    # Alertas térmica y de presión final
+    # Alertas
     alerta_termica = T2_max_C > 65.0
-    # Presión final de entrega (último punto del perfil)
-    presion_final_psi = presiones_psi[-1]  # siempre 500 por construcción
+    presion_final_psi = presiones_psi[-1]
     alerta_entrega = presion_final_psi < 500.0
     
     # ------------------ CÁLCULO DE COSTOS ------------------
@@ -196,7 +200,7 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos):
     costo_energia = params_economicos["costo_energia"]   # USD/kWh
     opex_energia = energia_anual_kWh * costo_energia
     
-    # OPEX adicional (mantenimiento) = 5% del CAPEX compresores (suposición)
+    # OPEX adicional (mantenimiento) = 5% del CAPEX compresores
     opex_mant = 0.05 * capex_comp
     
     OPEX_total = opex_energia + opex_mant
@@ -228,28 +232,50 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos):
         "opex_total": OPEX_total,
     }
 
-# ------------------ BARRA LATERAL (PARÁMETROS) ------------------
-st.sidebar.markdown('<p class="subtitulo">⚙️ Panel de Configuración</p>', unsafe_allow_html=True)
+# ------------------ BARRA LATERAL CON SECCIONES DESPLEGABLES ------------------
+st.sidebar.markdown('<p class="subtitulo" style="font-size:20px;">⚙️ Panel de Configuración</p>', unsafe_allow_html=True)
 
-# Parámetros económicos
-st.sidebar.markdown("### 💰 Parámetros Económicos")
-costo_energia = st.sidebar.number_input("Costo de energía (USD/kWh)", min_value=0.01, max_value=1.0, value=0.05, step=0.01, format="%.3f")
-tasa_interes = st.sidebar.number_input("Tasa de interés anual (%)", min_value=0.0, max_value=30.0, value=8.0, step=0.5)
-factor_steel = st.sidebar.number_input("Costo del acero (multiplicador)", min_value=0.5, max_value=2.0, value=1.0, step=0.05)
+# Sección 1: Parámetros Económicos
+with st.sidebar.expander("💰 Parámetros Económicos", expanded=True):
+    st.markdown('<p class="descripcion">🔹 <b>Costo de energía:</b> Afecta directamente el OPEX (gasto operativo). Un aumento incrementa el costo anual por electricidad/gas para los compresores.</p>', unsafe_allow_html=True)
+    costo_energia = st.number_input("USD/kWh", min_value=0.01, max_value=1.0, value=0.05, step=0.01, format="%.3f", key="energia")
+    
+    st.markdown('<p class="descripcion">🔹 <b>Tasa de interés:</b> Influye en el factor CRF. Tasas más altas encarecen el costo anualizado del capital (CAPEX).</p>', unsafe_allow_html=True)
+    tasa_interes = st.number_input("% anual", min_value=0.0, max_value=30.0, value=8.0, step=0.5, key="interes")
+    
+    st.markdown('<p class="descripcion">🔹 <b>Multiplicador costo del acero:</b> Simula fluctuaciones en el precio del material. A mayor valor, mayor CAPEX de tubería.</p>', unsafe_allow_html=True)
+    factor_steel = st.number_input("Factor", min_value=0.5, max_value=2.0, value=1.0, step=0.05, key="acero")
 
-# Selección de diámetro y grado de acero
-st.sidebar.markdown("### 📏 Tubería y Material")
-diametro = st.sidebar.selectbox("Diámetro nominal", list(pipe_data.keys()))
-grado_acero = st.sidebar.selectbox("Grado del acero", list(steel_data.keys()))
+# Sección 2: Tubería y Material
+with st.sidebar.expander("📏 Tubería y Material", expanded=True):
+    st.markdown('<p class="descripcion">🔹 <b>Diámetro nominal:</b> Diámetros mayores reducen la caída de presión (menor fricción), pero aumentan el CAPEX del ducto.</p>', unsafe_allow_html=True)
+    diametro = st.selectbox("Diámetro", list(pipe_data.keys()), key="diam")
+    
+    st.markdown('<p class="descripcion">🔹 <b>Grado del acero:</b> Mayor SMYS (X60 vs X52) permite mayores presiones de operación (MAOP más alto), pero cuesta ligeramente más.</p>', unsafe_allow_html=True)
+    grado_acero = st.selectbox("Grado", list(steel_data.keys()), key="grado")
 
-# Variables operativas
-st.sidebar.markdown("### 🔧 Operación")
-Q_diseno = st.sidebar.number_input("Flujo de gas (MMscfd)", min_value=100, max_value=1500, value=500, step=10)
-N_estaciones = st.sidebar.slider("Número de estaciones de compresión", min_value=1, max_value=10, value=2, step=1)
+# Sección 3: Variables Operativas
+with st.sidebar.expander("🔧 Operación", expanded=True):
+    st.markdown('<p class="descripcion">🔹 <b>Flujo de gas (Q):</b> A mayor flujo, mayor pérdida de presión y mayor potencia requerida en compresores (más OPEX y CAPEX).</p>', unsafe_allow_html=True)
+    Q_diseno = st.number_input("MMscfd", min_value=100, max_value=1500, value=500, step=10, key="flujo")
+    
+    st.markdown('<p class="descripcion">🔹 <b>Número de estaciones:</b> Más estaciones reducen la presión de descarga por etapa (menor riesgo de sobrepasar MAOP), pero incrementan el CAPEX de compresores.</p>', unsafe_allow_html=True)
+    N_estaciones = st.slider("Estaciones", min_value=1, max_value=10, value=2, step=1, key="estaciones")
 
 # Aplicar multiplicador al costo de tubería (costo del acero)
 for diam in pipe_data:
-    pipe_data[diam]["costo_m"] *= factor_steel
+    pipe_data[diam]["costo_m"] = pipe_data[diam]["costo_m"]  # se actualiza después, pero mejor hacer copia
+# Reasignamos los valores base cada vez para que el multiplicador no se acumule
+pipe_data_base = {
+    "12\"": {"D_ext_mm": 323.8, "t_mm": 10.31, "costo_m": 185},
+    "16\"": {"D_ext_mm": 406.4, "t_mm": 12.70, "costo_m": 260},
+    "20\"": {"D_ext_mm": 508.0, "t_mm": 15.09, "costo_m": 350},
+    "24\"": {"D_ext_mm": 609.6, "t_mm": 17.48, "costo_m": 440},
+}
+for diam in pipe_data_base:
+    pipe_data_base[diam]["costo_m"] *= factor_steel
+# Usamos pipe_data_base para cálculos
+pipe_data = pipe_data_base
 
 params_economicos = {
     "costo_energia": costo_energia,
@@ -272,39 +298,51 @@ if resultados:
     with col3:
         st.metric("📉 Presión final de entrega (psia)", f"{resultados['presion_final']:.1f}")
     
-    # Gráfico de perfil hidráulico
+    # Gráfico de perfil hidráulico (con leyenda)
     st.markdown('<p class="subtitulo">📉 Perfil Hidráulico: Presión vs Distancia</p>', unsafe_allow_html=True)
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=resultados['distancias_km'], y=resultados['presiones_psi'],
-                             mode='lines+markers', name='Presión',
-                             line=dict(color='#7FFFD4', width=3)))
+                             mode='lines+markers', name='Presión del gas',
+                             line=dict(color='#7FFFD4', width=3),
+                             marker=dict(size=6, color='#FFD700')))
     fig.update_layout(
-        title="Presión a lo largo del gasoducto",
+        title="Evolución de la presión a lo largo del gasoducto",
         xaxis_title="Distancia (km)",
         yaxis_title="Presión (psia)",
         plot_bgcolor='#1E1E1E',
         paper_bgcolor='#000000',
         font=dict(color='white'),
-        hovermode='x'
+        hovermode='x',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Desglose de costos (gráfico de barras)
-    st.markdown('<p class="subtitulo">📊 Desglose de Costos Anualizados</p>', unsafe_allow_html=True)
+    # Desglose de costos (gráfico de barras con colores variados y leyenda)
+    st.markdown('<p class="subtitulo">📊 Desglose de Costos Anualizados (CAPEX y OPEX)</p>', unsafe_allow_html=True)
     costs = resultados['cost_breakdown']
-    df_costs = pd.DataFrame({
-        "Concepto": list(costs.keys()),
-        "Monto (USD)": list(costs.values())
-    })
-    fig2 = go.Figure(go.Bar(x=df_costs["Concepto"], y=df_costs["Monto (USD)"],
-                            marker_color='#7FFFD4'))
+    conceptos = list(costs.keys())
+    montos = list(costs.values())
+    
+    # Paleta de colores personalizada
+    colores = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728']
+    fig2 = go.Figure(go.Bar(
+        x=conceptos,
+        y=montos,
+        marker_color=colores,
+        text=[f"${m:,.0f}" for m in montos],
+        textposition='outside',
+        name='Monto USD'
+    ))
     fig2.update_layout(
-        title="CAPEX vs OPEX",
+        title="Distribución de costos",
         yaxis_title="USD",
         plot_bgcolor='#1E1E1E',
         paper_bgcolor='#000000',
-        font=dict(color='white')
+        font=dict(color='white'),
+        showlegend=True,
+        legend=dict(orientation="v", yanchor="top", y=0.95, xanchor="right", x=0.98)
     )
+    # Añadir una traza fantasma para la leyenda (opcional, pero ya la tiene)
     st.plotly_chart(fig2, use_container_width=True)
     
     # Sistema de alertas
@@ -334,6 +372,12 @@ if resultados:
         st.write(f"**Presión de descarga por estación:** {resultados['P_descarga']:.1f} psia")
         st.write(f"**CAPEX total:** ${resultados['capex_total']:,.0f}")
         st.write(f"**OPEX total anual:** ${resultados['opex_total']:,.0f}")
-        st.write(f"**Factor CRF (i={tasa_interes}%, 20 años):** {((tasa_interes/100)*(1+tasa_interes/100)**20/((1+tasa_interes/100)**20-1)):.4f}")
+        i = tasa_interes / 100.0
+        n = 20
+        if i > 0:
+            CRF = i * (1+i)**n / ((1+i)**n - 1)
+        else:
+            CRF = 1/n
+        st.write(f"**Factor CRF (i={tasa_interes}%, 20 años):** {CRF:.4f}")
 else:
     st.error("No se pudo calcular con los parámetros actuales. Revise los valores ingresados.")
