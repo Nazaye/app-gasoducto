@@ -14,10 +14,10 @@ st.markdown("""
     .stApp {
         background-color: #000000;
     }
-    /* Título principal: Arial 20, azul aguamarina */
+    /* Título principal: Arial 70, azul aguamarina */
     .titulo-principal {
         font-family: 'Arial', sans-serif;
-        font-size: 60px;
+        font-size: 70px;
         color: #7FFFD4;
         text-align: center;
         font-weight: bold;
@@ -27,14 +27,14 @@ st.markdown("""
         font-family: 'Georgia', serif;
         font-size: 18px;
         color: #FFFFFF;
-        margin-top: 20px;
-        margin-bottom: 10px;
+        margin-top: 30px;
+        margin-bottom: 20px;
         font-weight: bold;
     }
     /* Texto normal blanco */
     .texto-normal {
         font-family: 'Verdana', sans-serif;
-        font-size: 14px;
+        font-size: 20px;
         color: #F0F0F0;
     }
     /* Fondo de los bloques de métricas y alertas */
