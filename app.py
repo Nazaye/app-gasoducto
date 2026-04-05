@@ -8,7 +8,7 @@ import plotly.express as px
 # ------------------------------------------------------------
 # CONFIGURACIÓN DE LA PÁGINA Y ESTILOS (sidebar a la derecha)
 # ------------------------------------------------------------
-st.set_page_config(page_title="Gasoducto Trans-Andino", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="🛢️ Gasoducto Trans-Andino 🛢️", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
