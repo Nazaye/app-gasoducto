@@ -17,7 +17,7 @@ st.markdown("""
     /* Título principal: Arial 20, azul aguamarina */
     .titulo-principal {
         font-family: 'Arial', sans-serif;
-        font-size: 20px;
+        font-size: 60px;
         color: #7FFFD4;
         text-align: center;
         font-weight: bold;
@@ -47,7 +47,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título principal
-st.markdown('<p class="titulo-principal">📊 Proyecto: Optimización y Simulación Digital - Gasoducto Trans-Andino</p>', unsafe_allow_html=True)
+st.markdown('<p class="titulo-principal">📊 Gasoducto Trans-Andino</p>', unsafe_allow_html=True)
 
 # ------------------ FUNCIONES DE CÁLCULO ------------------
 # Constantes y parámetros fijos
