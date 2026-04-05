@@ -23,7 +23,7 @@ st.markdown("""
     /* Título principal: GRANDE, mismo color que las tarjetas */
     .titulo-principal {
         font-family: 'Arial Black', sans-serif;
-        font-size: 2.8rem;          /* Tamaño fijo enorme */
+        font-size: 15vW;          /* Tamaño fijo enorme */
         font-weight: 800;
         color: #7FFFD4          /* Acuamarine */
         text-align: center;
