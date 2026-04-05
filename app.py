@@ -23,7 +23,7 @@ st.markdown("""
     /* Título principal: GRANDE, mismo color que las tarjetas */
     .titulo-principal {
         font-family: 'Poppins', 'Segoe UI', sans-serif;
-        font-size: 80px;          /* Tamaño fijo enorme */
+        font-size: 200px;          /* Tamaño fijo enorme */
         font-weight: 800;
         color: #7FFFD4;           /* Aguamarina */
         text-align: center;
