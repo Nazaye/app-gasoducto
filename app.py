@@ -284,6 +284,7 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos, pipe_data_ac
     # Costos
     longitud_m = L_km * 1000
     capex_pipe = longitud_m * costo_pipe_m
+    capex_comp = HP_total * costo_comp_por_HP
     capex_comp = HP_total * 1500.0   # costo estándar por HP instalado
     
     i_tasa = params_economicos["tasa_interes"] / 100.0
@@ -338,6 +339,9 @@ with st.sidebar.expander("💰 PARÁMETROS ECONÓMICOS", expanded=True):
     
     st.markdown('<div class="descripcion">💡 Multiplica costo del acero (simula variaciones de mercado).</div>', unsafe_allow_html=True)
     factor_steel = st.number_input("Factor acero", min_value=0.5, max_value=2.0, value=1.0, step=0.05, key="acero")
+
+    st.markdown('<div class="descripcion">💡 Costo de inversión por HP de compresor (rango típico 1000-3000 USD/HP).</div>', unsafe_allow_html=True)
+    costo_comp_por_HP = st.number_input("Costo compresor (USD/HP)", min_value=1000, max_value=3000, value=1500, step=50, key="costo_comp")
 
 with st.sidebar.expander("📏 TUBERÍA Y MATERIAL", expanded=True):
     st.markdown('<div class="descripcion">💡 Mayor diámetro → menor caída presión, pero más CAPEX.</div>', unsafe_allow_html=True)
