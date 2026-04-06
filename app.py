@@ -20,12 +20,12 @@ st.markdown("""
         background-color: #000000;
     }
 
-    /* Título principal: GRANDE, mismo color que las tarjetas */
+    /* Título principal */
     .titulo-principal {
         font-family: 'Arial Black', sans-serif;
-        font-size: 15vW;          /* Tamaño fijo enorme */
+        font-size: 4rem !important;
         font-weight: 800;
-        color: #7FFFD4          /* Acuamarine */
+        color: #7FFFD4;
         text-align: center;
         margin-bottom: 0.2rem;
         letter-spacing: 2px;
@@ -33,10 +33,10 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
-    /* Subtítulo: más pequeño, blanco, elegante */
+    /* Subtítulo */
     .subtitulo-principal {
         font-family: 'Poppins', 'Segoe UI', sans-serif;
-        font-size: 22px;
+        font-size: 24px !important;
         font-weight: 300;
         color: #FFFFFF;
         text-align: center;
@@ -45,7 +45,7 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Encabezados de sección (RESULTADOS, Perfil Hidráulico, etc.) */
+    /* Encabezados de sección */
     .seccion-titulo {
         font-family: 'Poppins', 'Segoe UI', sans-serif;
         font-size: 28px;
@@ -57,9 +57,9 @@ st.markdown("""
         padding-left: 15px;
     }
     
-    /* Tarjetas de métricas (mismo color que el título) */
+    /* Tarjetas de métricas */
     .metric-card {
-        background-color: #ccccc;   /* Azul os */
+        background-color: #1E1E2E;
         border-radius: 20px;
         padding: 25px 15px;
         text-align: center;
@@ -81,7 +81,7 @@ st.markdown("""
         font-family: 'Poppins', 'Segoe UI', sans-serif;
         font-size: 36px;
         font-weight: 700;
-        color: #7FFFD4;   /* Aguamarina */
+        color: #7FFFD4;
         margin: 0;
     }
     .metric-unit {
@@ -91,7 +91,7 @@ st.markdown("""
         color: #FFFFFF;
     }
     
-    /* Descripciones en sidebar (amarillo suave) */
+    /* Descripciones en sidebar */
     .descripcion {
         font-size: 13px;
         color: #FFFACD;
@@ -103,116 +103,193 @@ st.markdown("""
         font-family: 'Poppins', 'Segoe UI', sans-serif;
     }
     
-    /* Ajustes para los expanders de la sidebar */
+    /* ========== BARRA LATERAL Y EXPANDERS NEGROS ========== */
+    /* Fondo de la barra lateral */
+    section[data-testid="stSidebar"],
+    section[data-testid="stSidebar"] > div,
+    section[data-testid="stSidebar"] div[data-testid="stSidebarContent"],
+    .css-1d391kg, .st-emotion-cache-1d391kg,
+    .st-emotion-cache-16txtl3, .st-emotion-cache-1v0mbdj {
+        background-color: #000000 !important;
+    }
+    
+    /* Encabezados de expander (color del texto) */
     .streamlit-expanderHeader {
         font-family: 'Poppins', 'Segoe UI', sans-serif;
         font-weight: 600;
         font-size: 18px;
-        color: #7FFFD4;
+        color: #7FFFD4 !important;
+        background-color: #000000 !important;
+    }
+    
+    /* Inputs y otros elementos */
+    section[data-testid="stSidebar"] .stNumberInput,
+    section[data-testid="stSidebar"] .stSelectbox,
+    section[data-testid="stSidebar"] .stSlider {
+        background-color: #000000 !important;
+    }
+    
+    /* Etiquetas de los inputs en la barra lateral: blanco */
+    section[data-testid="stSidebar"] .stNumberInput label,
+    section[data-testid="stSidebar"] .stSelectbox label,
+    section[data-testid="stSidebar"] .stSlider label {
+        color: #FFFFFF !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Títulos
-st.markdown('<p class="titulo-principal">🔥 GASODUCTO TRANS-ANDINO</p>', unsafe_allow_html=True)
+# Títulos (con emoji de gas 💨)
+st.markdown('<p class="titulo-principal">💨 GASODUCTO TRANS-ANDINO</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitulo-principal">Gemelo digital | Simulación hidráulica & económica</p>', unsafe_allow_html=True)
 
-# ------------------ FUNCIONES DE CÁLCULO ------------------
+# ------------------ FUNCIONES DE CÁLCULO (CORREGIDAS) ------------------
 L_km = 400.0
 L_miles = L_km * 0.621371
 T1_K = 293.15
-T1_R = T1_K * 9/5
+T1_R = T1_K * 9/5        # Rankine
 gamma = 0.65
 Z = 0.90
-k = 1.28
-eta = 0.85
-horas_anio = 8760
+k = 1.28                 # Relación de calores específicos (dato típico)
+eta = 0.85               # Eficiencia del compresor
+horas_anio = 8760        # horas de operación por año
 
+# Constante universal
+R_univ = 10.7316         # psi·ft³/(lbmol·R)
+MW_aire = 28.97
+MW = gamma * MW_aire     # lb/lbmol
+R_esp = R_univ / MW      # psi·ft³/(lbm·R)   (constante específica)
+
+# Factor de conversión para potencia (de la ecuación del enunciado)
+# La fórmula: HP = (Q*1e6)/(24*3600*η) * (Z*R_esp*T1_R)/(k-1) * [(Pout/Pin)^((k-1)/k) - 1]
+# El primer factor da scf/s. Multiplicado por (Z*R_esp*T1_R)/(k-1) da (lbf·ft/lbm)·(scf/s)
+# Para obtener HP (550 lbf·ft/s = 1 HP), necesitamos convertir scf a lb usando la densidad en condiciones estándar.
+# Pero como la fórmula del enunciado ya está "adimensionalizada", asumimos que R_esp está en (lbf·ft)/(lbm·R)
+# y que Q está en MMscfd. Para evitar confusiones, usaremos una versión común en ingeniería:
+# HP = 0.0857 * Q * (Z * T1_R / MW) * (k/(k-1)) * (r^((k-1)/k) - 1) / eta  (con Q en MMscfd, T1_R en R, MW en lb/lbmol)
+# Este factor 0.0857 proviene de (1e6)/(24*3600)* (R_univ/550) etc. Es ampliamente usado.
+# Lo dejamos así para mantener coherencia con cálculos previos que sí daban resultados razonables.
+# Pero para mayor precisión, usaremos la fórmula directa con la densidad estándar.
+# Vamos a implementar la fórmula correcta paso a paso.
+
+def potencia_compresor(Q_MMscfd, P_suc_psia, P_desc_psia, T_suc_R, Z, k, MW, eta):
+    """
+    Calcula la potencia en HP usando la fórmula termodinámica estándar.
+    Q_MMscfd: flujo en millones de pies cúbicos por día (base 14.7 psia, 60°F)
+    """
+    # Flujo másico en lb/s
+    Q_scf_s = Q_MMscfd * 1e6 / (24 * 3600)   # scf/s
+    # Densidad del gas en condiciones estándar (14.7 psia, 60°F = 520 R)
+    P_std = 14.7          # psia
+    T_std = 520           # Rankine
+    Z_std = 1.0
+    rho_std = (P_std * 144) * MW / (R_univ * T_std)   # lb/scf (144 para convertir psia a lbf/ft²)
+    m_dot = Q_scf_s * rho_std                         # lb/s
+    # Relación de compresión
+    r = P_desc_psia / P_suc_psia
+    # Exponente politrópico
+    n = (k - 1) / k
+    # Head politrópico (ft·lbf/lb)
+    H_p = (Z * R_esp * T_suc_R) * (1 / n) * (pow(r, n) - 1)
+    # Potencia en HP
+    HP = (m_dot * H_p) / (550 * eta)
+    return HP
+
+def weymouth_drop(P1, Q, L_mi, D_in, gamma, T_R, Z):
+    """Retorna P2 (psia) después de un segmento de longitud L_mi (millas)"""
+    const = 433.5
+    term = const * (Q**2) * L_mi * gamma * T_R * Z / (pow(D_in, 5.33))
+    P2_sq = P1**2 - term
+    if P2_sq <= 0:
+        return 0.1
+    return sqrt(P2_sq)
+
+def calcular_MAOP(D_ext_in, t_in, SMYS_psi, F):
+    return 2 * SMYS_psi * F * t_in / D_ext_in
+
+# Datos de tuberías y aceros (igual que antes)
 pipe_data_base = {
     "12\"": {"D_ext_mm": 323.8, "t_mm": 10.31, "costo_m": 185},
     "16\"": {"D_ext_mm": 406.4, "t_mm": 12.70, "costo_m": 260},
     "20\"": {"D_ext_mm": 508.0, "t_mm": 15.09, "costo_m": 350},
     "24\"": {"D_ext_mm": 609.6, "t_mm": 17.48, "costo_m": 440},
 }
-
 steel_data = {
     "X52": {"SMYS_psi": 52000, "F": 0.72},
     "X60": {"SMYS_psi": 60000, "F": 0.72},
 }
 
-def calcular_MAOP(D_ext_in, t_in, SMYS_psi, F):
-    return 2 * SMYS_psi * F * t_in / D_ext_in
-
-def weymouth_k_loss(Q_MMscfd, L_seg_millas, D_in_pulg, gamma, T_R, Z):
-    return 433.5 * (Q_MMscfd**2) * L_seg_millas * gamma * T_R * Z / (D_in_pulg**5.33)
-
 def calcular_perfil(N, Q, diametro, grado_acero, params_economicos, pipe_data_actual):
-    diam_nom = diametro
-    D_ext_mm = pipe_data_actual[diam_nom]["D_ext_mm"]
-    t_mm = pipe_data_actual[diam_nom]["t_mm"]
+    # Extraer datos de tubería
+    D_ext_mm = pipe_data_actual[diametro]["D_ext_mm"]
+    t_mm = pipe_data_actual[diametro]["t_mm"]
     D_int_mm = D_ext_mm - 2*t_mm
     D_int_pulg = D_int_mm / 25.4
-    costo_pipe_m = pipe_data_actual[diam_nom]["costo_m"]
+    costo_pipe_m = pipe_data_actual[diametro]["costo_m"]
     
+    # Datos del acero
     SMYS_psi = steel_data[grado_acero]["SMYS_psi"]
     F = steel_data[grado_acero]["F"]
-    
     D_ext_pulg = D_ext_mm / 25.4
     t_pulg = t_mm / 25.4
     MAOP_psi = calcular_MAOP(D_ext_pulg, t_pulg, SMYS_psi, F)
     
-    L_seg_millas = L_miles / N
-    K_seg = weymouth_k_loss(Q, L_seg_millas, D_int_pulg, gamma, T1_R, Z)
+    # Longitud de cada segmento (millas). Hay N+1 segmentos (entre estaciones)
+    L_seg_mi = L_miles / (N + 1)
     
-    if K_seg < 0:
-        return None
-    P_desc_psi = sqrt(500**2 + K_seg)
-    supera_maop = P_desc_psi > MAOP_psi
-    
-    distancias_km = []
-    presiones_psi = []
-    dist_actual = 0.0
-    for i in range(N):
-        distancias_km.append(dist_actual)
-        presiones_psi.append(P_desc_psi)
-        dist_seg_km = L_km / N
-        distancias_km.append(dist_actual + dist_seg_km)
-        presiones_psi.append(500.0)
-        dist_actual += dist_seg_km
-    
+    # Inicializar vectores
+    distancias_km = [0.0]
+    presiones_psi = [800.0]   # presión inicial
+    P_actual = 800.0
     HP_total = 0.0
     T2_max_C = 0.0
-    factor = 0.0857
-    P_suc = 800.0
-    r = P_desc_psi / P_suc
-    HP_est = factor * Q * P_suc * (pow(r, (k-1)/k) - 1) / eta
-    HP_total += HP_est
-    T2_K = T1_K * pow(r, (k-1)/k)
-    T2_C = T2_K - 273.15
-    T2_max_C = T2_C
     
-    for _ in range(1, N):
-        P_suc = 500.0
-        r = P_desc_psi / P_suc
-        HP_est = factor * Q * P_suc * (pow(r, (k-1)/k) - 1) / eta
-        HP_total += HP_est
-        T2_K = T1_K * pow(r, (k-1)/k)
-        T2_C = T2_K - 273.15
+    # Simular los primeros N segmentos (cada uno seguido de un compresor)
+    for i in range(N):
+        # Caída en el segmento i+1
+        P_fin_seg = weymouth_drop(P_actual, Q, L_seg_mi, D_int_pulg, gamma, T1_R, Z)
+        dist_km = (i+1) * (L_km / (N+1))
+        distancias_km.append(dist_km)
+        presiones_psi.append(P_fin_seg)
+        
+        # Compresor: eleva la presión a 800 psia
+        P_suc = P_fin_seg
+        P_desc = 800.0
+        HP = potencia_compresor(Q, P_suc, P_desc, T1_R, Z, k, MW, eta)
+        HP_total += HP
+        
+        # Temperatura de descarga
+        r = P_desc / P_suc
+        T2_R = T1_R * pow(r, (k-1)/k)
+        T2_C = (T2_R - 491.67) * 5/9
         if T2_C > T2_max_C:
             T2_max_C = T2_C
+        
+        # Actualizar presión para el siguiente segmento
+        P_actual = P_desc
+        # Agregar punto de presión de descarga (para el gráfico)
+        if i < N-1:
+            distancias_km.append(dist_km)
+            presiones_psi.append(P_desc)
     
-    alerta_termica = T2_max_C > 65.0
-    presion_final_psi = presiones_psi[-1]
-    alerta_entrega = presion_final_psi < 500.0
+    # Último segmento (sin compresor al final)
+    P_final = weymouth_drop(P_actual, Q, L_seg_mi, D_int_pulg, gamma, T1_R, Z)
+    distancias_km.append(L_km)
+    presiones_psi.append(P_final)
     
+    # Alertas
+    supera_maop = (800.0 > MAOP_psi)   # la presión de descarga es 800 psia
+    alerta_termica = (T2_max_C > 65.0)
+    alerta_entrega = (P_final < 500.0)
+    
+    # Costos
     longitud_m = L_km * 1000
     capex_pipe = longitud_m * costo_pipe_m
-    capex_comp = HP_total * 1500.0
+    capex_comp = HP_total * 1500.0   # costo estándar por HP instalado
     
-    i = params_economicos["tasa_interes"] / 100.0
+    i_tasa = params_economicos["tasa_interes"] / 100.0
     n = 20
-    if i > 0:
-        CRF = i * (1+i)**n / ((1+i)**n - 1)
+    if i_tasa > 0:
+        CRF = i_tasa * (1+i_tasa)**n / ((1+i_tasa)**n - 1)
     else:
         CRF = 1/n
     
@@ -233,8 +310,8 @@ def calcular_perfil(N, Q, diametro, grado_acero, params_economicos, pipe_data_ac
     return {
         "TAC": TAC,
         "HP_total": HP_total,
-        "presion_final": presion_final_psi,
-        "P_descarga": P_desc_psi,
+        "presion_final": P_final,
+        "P_descarga": 800.0,
         "MAOP": MAOP_psi,
         "supera_MAOP": supera_maop,
         "alerta_termica": alerta_termica,
@@ -261,6 +338,9 @@ with st.sidebar.expander("💰 PARÁMETROS ECONÓMICOS", expanded=True):
     
     st.markdown('<div class="descripcion">💡 Multiplica costo del acero (simula variaciones de mercado).</div>', unsafe_allow_html=True)
     factor_steel = st.number_input("Factor acero", min_value=0.5, max_value=2.0, value=1.0, step=0.05, key="acero")
+
+    t.markdown('<div class="descripcion">💡 Costo de inversión por HP de compresor (rango típico 1000-3000 USD/HP).</div>', unsafe_allow_html=True)
+    costo_comp_por_HP = st.number_input("Costo compresor (USD/HP)", min_value=1000, max_value=3000, value=1500, step=50, key="costo_comp")
 
 with st.sidebar.expander("📏 TUBERÍA Y MATERIAL", expanded=True):
     st.markdown('<div class="descripcion">💡 Mayor diámetro → menor caída presión, pero más CAPEX.</div>', unsafe_allow_html=True)
@@ -360,9 +440,9 @@ if resultados:
     # Validación de seguridad
     st.markdown('<div class="seccion-titulo">⚠️ VALIDACIÓN DE SEGURIDAD</div>', unsafe_allow_html=True)
     if resultados['supera_MAOP']:
-        st.error(f"🚨 ALERTA: Presión de descarga ({resultados['P_descarga']:.1f} psia) > MAOP ({resultados['MAOP']:.1f} psia)")
+        st.error(f"🚨 ALERTA: Presión de descarga (800 psia) > MAOP ({resultados['MAOP']:.1f} psia)")
     else:
-        st.success(f"✅ MAOP verificado: {resultados['P_descarga']:.1f} ≤ {resultados['MAOP']:.1f} psia")
+        st.success(f"✅ MAOP verificado: 800 psia ≤ {resultados['MAOP']:.1f} psia")
     
     if resultados['alerta_termica']:
         st.error(f"🔥 ALERTA TÉRMICA: Temperatura máxima = {resultados['T2_max_C']:.1f} °C > 65 °C")
@@ -376,7 +456,7 @@ if resultados:
     
     with st.expander("🔍 Ver detalles técnicos del diseño"):
         st.write(f"**Diámetro interno:** {(pipe_data[diametro]['D_ext_mm'] - 2*pipe_data[diametro]['t_mm'])/25.4:.2f} pulg")
-        st.write(f"**Presión de descarga por estación:** {resultados['P_descarga']:.1f} psia")
+        st.write(f"**Presión de descarga por estación:** 800 psia")
         st.write(f"**CAPEX total:** ${resultados['capex_total']:,.0f}")
         st.write(f"**OPEX total anual:** ${resultados['opex_total']:,.0f}")
         i = tasa_interes / 100.0
